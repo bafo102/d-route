@@ -31,8 +31,9 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     data_time = localStorage.getItem('shortcut_data_time');
     console.log(data_time);
     shortcutCodes = localStorage.getItem('shortcut_data');
-    shortcutCodesParsed = JSON.parse(localStorage.getItem('shortcut_data'));
+    shortcutCodesParsed = JSON.parse(shortcutCodes);
     console.log(shortcutCodes)
+    console.log(shortcutCodesParsed)
     // Use the Clipboard API to copy the text
     navigator.clipboard.writeText(shortcutCodes);
     alert(`Codes copied: ${shortcutCodes}`);
@@ -50,8 +51,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
     }
 });
 
-let currentShortcuts = [];
-
+let currentShortcusJson = [];
 
 document.getElementById('downloadBtn').addEventListener('click', getCurrentShortcuts);
 function getCurrentShortcuts() {
@@ -59,22 +59,49 @@ function getCurrentShortcuts() {
     groupElements = document.querySelectorAll('.group');
     groupIds = Array.from(groupElements).map(element => element.id);
     
+    // reset current shortcut info
+    currentShortcusJson = [];
+
     // loop thru all groupID
     for (i = 0; i < groupIds.length; ++i) {
         // find groupName
+        groupID = groupIds[i];
         groupName = document.querySelector(`#${groupIds[i]} .group-name`).textContent;
         // find groupBg
-        groupBg = document.querySelector(`#${groupIds[i]} .group-name`).getAttribute('style');
+        groupBg = document.querySelector(`#${groupIds[i]} .group-name`).getAttribute('style').slice(-7);
         // loop thru all shortcuts
-        for (let i = 0; i < 10; i++) {
-            // shortcutName
-            
-            // link
-            // shortcutBg
+        shortcutContainer = document.querySelector(`#${groupIds[i]} .shortcut-container`);
+        for (let j = 0; j < shortcutContainer.children.length; j++) {
+            shortcut = shortcutContainer.children[j];
+            shortcutName = '';
+            link = '';
+            shortcutBg = '';
+            // if shortcut not blank
+            if (!shortcutContainer.children[j].classList.contains('blank')) {
+                // shortcutName, link, shortcutBg
+                shortcutName = shortcut.children[2].textContent;
+                link = shortcut.children[1].href;
+                shortcutBg = shortcut.getAttribute('style').slice(-7);
+            }
+            else {
+                shortcutName = null;
+                link = null;
+                shortcutBg = null;
+            }
+            toStore = {
+                "groupID": groupID,
+                "groupName": groupName,
+                "groupBg": groupBg,
+                "shortcutName": shortcutName,
+                "link": link,
+                "shortcutBg": shortcutBg
+            };
+            currentShortcusJson.push(toStore);
+            currentShortcutsCodes = JSON.stringify(currentShortcusJson);
         }
-        
-        console.log(groupName, groupBg, numberOfShorcuts);
     }
+    console.log(currentShortcusJson);
+    console.log(currentShortcutsCodes);
 }
 
 document.getElementById('pasteBtn').addEventListener('click', createShortcut);
@@ -306,8 +333,10 @@ $( function() {
 } );
 
 $( function() {
-$( ".shorcut-container" ).sortable({
-  connectWith: ".shorcut-container",
-  tolerance: "pointer"
+$( ".shortcut-container" ).sortable({
+    // helper: "clone",
+    forceHelperSize: true,
+    connectWith: ".shortcut-container",
+    tolerance: "pointer"
 })
 } );

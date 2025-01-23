@@ -40,7 +40,7 @@
     font-weight: bold;
 }
 
-.shorcut-container {
+.shortcut-container {
     display: flex;
 }
 
@@ -105,7 +105,7 @@ a {
 
 .fa-solid.fa-plus {
     color: #ffffff;
-    font-size: 3vh;
+    font-size: 2vh;
 }
 
 .ui-state-highlight {
