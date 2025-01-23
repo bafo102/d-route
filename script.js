@@ -55,22 +55,21 @@ let currentShortcusJson = [];
 
 document.getElementById('downloadBtn').addEventListener('click', getCurrentShortcuts);
 function getCurrentShortcuts() {
-    // find all groupIDs
-    groupElements = document.querySelectorAll('.group');
-    groupIds = Array.from(groupElements).map(element => element.id);
-    
+    // find all groupNames
+    groupNames = document.querySelectorAll('.group-name');
+    // find all shortcutContainers
+    shortcutContainers = document.querySelectorAll('.shortcut-container');
     // reset current shortcut info
     currentShortcusJson = [];
 
     // loop thru all groupID
-    for (i = 0; i < groupIds.length; ++i) {
+    for (i = 0; i < groupNames.length; ++i) {
         // find groupName
-        groupID = groupIds[i];
-        groupName = document.querySelector(`#${groupIds[i]} .group-name`).textContent;
+        groupName = groupNames[i].textContent;
         // find groupBg
-        groupBg = document.querySelector(`#${groupIds[i]} .group-name`).getAttribute('style').slice(-7);
+        groupBg = groupNames[i].getAttribute('style').slice(-7);
         // loop thru all shortcuts
-        shortcutContainer = document.querySelector(`#${groupIds[i]} .shortcut-container`);
+        shortcutContainer = shortcutContainers[i];
         for (let j = 0; j < shortcutContainer.children.length; j++) {
             shortcut = shortcutContainer.children[j];
             shortcutName = '';
@@ -89,7 +88,6 @@ function getCurrentShortcuts() {
                 shortcutBg = null;
             }
             toStore = {
-                "groupID": groupID,
                 "groupName": groupName,
                 "groupBg": groupBg,
                 "shortcutName": shortcutName,
@@ -295,11 +293,6 @@ function createShortcut() {
 // console.log(data[3]["shortcutName"]);
 
 
-
-
-
-
-
 // groups [groupID, groupName, groupBg]
 // shortcuts [shortcutName, link, shortcutBg]
 
@@ -327,7 +320,7 @@ function createShortcut() {
 // make group sortable
 $( function() {
   $( "#main" ).sortable({
-    placeholder: "ui-state-highlight",
+    placeholder: "placeholder-group",
     handle: ".handle"
   });
 } );
