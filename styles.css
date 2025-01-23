@@ -12,6 +12,9 @@
     height: 3vh;
     background-color: lightgrey;
     margin-bottom: 2vh;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
 #main {
@@ -27,11 +30,14 @@
     /* border: 1px solid red; */
 }
 
-.group-title {
+.group-name {
     height: 8.2vh;
     width: 8vw;
     /* margin-left: 1vh; */
-    background-color: #4371ba;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
 }
 
 .shorcut-container {
@@ -42,8 +48,9 @@
     height: 8.2vh;
     width: 8vw;
     margin-left: 1vh;
-    background-color: #37afbd;
-    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .shortcut:hover {
@@ -51,16 +58,54 @@
     /* background-color: lightgray; */
 }
 
+
+.shortcut-edit {
+    z-index: 3;
+    height: 8.2vh;
+    width: 8vw;
+    position: absolute;
+    background-color: red;
+    opacity: 50%;
+}
+
+.shortcut-edit > * {
+    margin: 0 0.5vw;
+}
+
+a {
+    height: 8.2vh;
+    width: 8vw;
+    position: absolute;
+    z-index: 2;
+    /* background-color: pink; */
+    /* opacity: 70%; */
+}
+
+.shortcut-name {
+    font-size: 1.4vh;
+    padding: 0.4vh 0.5vw;
+    max-height: 5vh;
+    min-width: 5vw;
+    max-width: 7vw;
+    /* position: absolute; */
+    display: flex;
+    align-items: top;
+    justify-content: center;
+    text-align: center;
+    z-index: 1;
+    border-radius: 30px;
+    background-color: #ffffff;
+    overflow-wrap: break-word;
+    /* text-overflow: ellipsis; */
+}
+
 .blank:hover {
     background-color: lightgray;
 }
 
-a {
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    display: block;
-    /* background-color: pink; */
+.fa-solid.fa-plus {
+    color: #ffffff;
+    font-size: 3vh;
 }
 
 .ui-state-highlight {

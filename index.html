@@ -7,29 +7,58 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="header"></div>
+    <div id="header">
+        <div>
+            <button id="pasteBtn">Paste <i class="fa-solid fa-clipboard"></i></button>
+            <button id="copyBtn">Copy <i class="fa-solid fa-copy"></i></button>
+        </div>
+        <div>
+            <i class="fa-solid fa-upload"></i><input type="file" id="uploadBtn" accept=".xlsx">
+            <button id="downloadBtn">Download <i class="fa-solid fa-download"></i></button>
+        </div>
+        <div>
+            <button id="saveBtn">Save <i class="fa-solid fa-floppy-disk"></i></button>
+            <button id="clearBtn">Clear <i class="fa-solid fa-trash-can"></i></button>
+        </div>
+        <div>
+            <button>Edit <i class="fa-solid fa-toggle-off"></i></button>
+        </div>
+    </div>
     <div id="main">
         <div id="group1" class="group ui-state-default">
             <div class="handle"><i class="fa-solid fa-arrows-up-down"></i></div>
-            <div class="group-title">MAIN</div>
+            <div class="group-name" style="background-color: #4371ba">MAIN</div>
             <div class="shorcut-container">
-                <div class="shortcut">0
-                    <a href="https://www.youtube.com/"></a>
+                <div class="shortcut" style="background-color: #6c8d91">
+                    <div class="shortcut-edit" hidden></div>
+                    <a href="https://www.google.com/" title="Google"></a>
+                    <div class="shortcut-name">Google</div>
                 </div>
-                <div class="shortcut blank">1</div>
-                <div class="shortcut blank">2</div>
-                <div class="shortcut blank">3</div>
-                <div class="shortcut blank">4</div>
-                <div class="shortcut blank">5</div>
-                <div class="shortcut blank">6</div>
-                <div class="shortcut blank">7</div>
-                <div class="shortcut blank">8</div>
-                <div class="shortcut blank">9</div>
+                <div class="shortcut" style="background-color: #2d9268">
+                    <div class="shortcut-edit" hidden></div>
+                    <a href="https://www.youtube.com/" title="Youtube"></a>
+                    <div class="shortcut-name">Youtube</div>
+                </div>
+                <div class="shortcut" style="background-color: #ffffff">
+                    <div class="shortcut-edit" hidden></div>
+                    <a href="" title=""></a>
+                    <div class="shortcut-name"></div>
+                </div>
+                <div class="shortcut" style="background-color: #3f1e9b">4</div>
+                
+                <div class="shortcut" style="background-color: #6c8d91">10
+                    <input type="color" id="colorInput">
+                </div>
+                <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+                <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+                <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+                <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+                <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
             </div>
         </div>
-        <div id="group2" class="group ui-state-default">
+        <div id="group2323" class="group ui-state-default">
             <div class="handle"><i class="fa-solid fa-arrows-up-down"></i></div>
-            <div class="group-title">MAIN 2</div>
+            <div class="group-name" style="background-color: #43ba8c">SUPP</div>
             <div class="shorcut-container">
                 <div class="shortcut">0
                     <a href="https://www.youtube.com/"></a>
@@ -45,7 +74,26 @@
                 <div class="shortcut blank">9</div>
             </div>
         </div>
+        <!-- <div id="group2" class="group ui-state-default">
+            <div class="handle"><i class="fa-solid fa-arrows-up-down"></i></div>
+            <div class="group-name">MAIN 2</div>
+            <div class="shorcut-container">
+                <div class="shortcut">0
+                    <a href="https://www.youtube.com/"></a>
+                </div>
+                <div class="shortcut blank">1</div>
+                <div class="shortcut blank">2</div>
+                <div class="shortcut blank">3</div>
+                <div class="shortcut blank">4</div>
+                <div class="shortcut blank">5</div>
+                <div class="shortcut blank">6</div>
+                <div class="shortcut blank">7</div>
+                <div class="shortcut blank">8</div>
+                <div class="shortcut blank">9</div>
+            </div>
+        </div> -->
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
     <script src="script.js"></script>
