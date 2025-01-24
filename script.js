@@ -51,25 +51,23 @@ document.getElementById('clearBtn').addEventListener('click', () => {
     }
 });
 
-let currentShortcusJson = [];
+let currentShortcutJson = [];
 
 document.getElementById('downloadBtn').addEventListener('click', getCurrentShortcuts);
 function getCurrentShortcuts() {
-    // find all groupNames
-    groupNames = document.querySelectorAll('.group-name');
-    // find all shortcutContainers
-    shortcutContainers = document.querySelectorAll('.shortcut-container');
-    // reset current shortcut info
-    currentShortcusJson = [];
+    // find all groupID from class "group"
+    groupElements = document.querySelectorAll('.group');
+    groupIDs = Array.from(groupElements).map(element => element.id);
 
-    // loop thru all groupID
-    for (i = 0; i < groupNames.length; ++i) {
+    // loop thru all groupIDs
+    for (i = 0; i < groupIDs.length; ++i) {
         // find groupName
-        groupName = groupNames[i].textContent;
+        group = document.querySelector(`#${groupIDs[i]}`);
+        groupName = group.children[1].textContent;
         // find groupBg
-        groupBg = groupNames[i].getAttribute('style').slice(-7);
+        groupBg = group.children[1].getAttribute('style').slice(-7);
         // loop thru all shortcuts
-        shortcutContainer = shortcutContainers[i];
+        shortcutContainer = group.children[2];
         for (let j = 0; j < shortcutContainer.children.length; j++) {
             shortcut = shortcutContainer.children[j];
             shortcutName = '';
@@ -94,11 +92,11 @@ function getCurrentShortcuts() {
                 "link": link,
                 "shortcutBg": shortcutBg
             };
-            currentShortcusJson.push(toStore);
-            currentShortcutsCodes = JSON.stringify(currentShortcusJson);
+            currentShortcutJson.push(toStore);
+            currentShortcutsCodes = JSON.stringify(currentShortcutJson);
         }
     }
-    console.log(currentShortcusJson);
+    console.log(currentShortcutJson);
     console.log(currentShortcutsCodes);
 }
 
@@ -107,55 +105,140 @@ function createShortcut() {
     shortcutCodes = localStorage.getItem('shortcut_data');
     shortcutCodesParsed = JSON.parse(localStorage.getItem('shortcut_data'));
     if (shortcutCodes) {
-        for (let i = 0; i < shortcutCodesParsed.length; i++) {
+        // delete all current elements in main
+        mainDiv = document.getElementById('main');
+        while (mainDiv.firstChild) {
+            mainDiv.removeChild(mainDiv.firstChild);
+        }
+
+        for (i = 0; i < shortcutCodesParsed.length; i++) {
             groupID = shortcutCodesParsed[i]["groupID"];
             groupName = shortcutCodesParsed[i]["groupName"];
             groupBg = shortcutCodesParsed[i]["groupBg"];
             shortcutName = shortcutCodesParsed[i]["shortcutName"];
             link = shortcutCodesParsed[i]["link"];
             shortcutBg = shortcutCodesParsed[i]["shortcutBg"];
-            console.log(groupID, groupName, groupBg, shortcutName, link, shortcutBg);
 
+            // create group, handle, group-name, shortcut-container if not available
+            if (!mainDiv.querySelector(`#${groupID}`)) {
+                // create group
+                newGroup = document.createElement('div');
+                newGroup.setAttribute("id", `${groupID}`); // set id
+                newGroup.classList.add("group"); // add class
+                mainDiv.appendChild(newGroup); // add group to main
 
-            // create group
-            // create handle
-            // create group-name
-            // create shorcut-container
+                // create handle
+                newHandle = document.createElement('div');
+                newHandle.classList.add("handle"); // add class
+                newHandle.innerHTML = '<i class="fa-solid fa-arrows-up-down"></i>'; // add icon
+                newGroup.appendChild(newHandle); // add handle to group
+
+                // create group-name
+                newGroupName = document.createElement('div');
+                newGroupName.classList.add("group-name"); // add class
+                newGroupName.setAttribute("style", `background-color: ${groupBg}`); // set style
+                newGroupName.textContent = groupName; // set textContent
+                newGroup.appendChild(newGroupName); // add group-name to group
+
+                // create shorcut-container
+                newShortcutContainer = document.createElement('div');
+                newShortcutContainer.classList.add("shortcut-container"); // add class
+                newGroup.appendChild(newShortcutContainer); // add shorcut-container to group
+            }
+            
+            // re-declare parent div
+            shortcutContainer = mainDiv.querySelector(`#${groupID} .shortcut-container`);
+
             // create shortcut
+            if (shortcutName == null || link == null) { // if null
+                newBlankShortcut = document.createElement('div');
+                newBlankShortcut.classList.add("shortcut"); // add class
+                newBlankShortcut.classList.add("blank"); // add class
+                newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
+                shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
+            }
+            else { // if not null
+                newShortcut = document.createElement('div');
+                newShortcut.classList.add("shortcut"); // add class
+                newShortcut.setAttribute("style", `background-color: ${shortcutBg}`); // set style
+                shortcutContainer.appendChild(newShortcut); // add shorcut to shortcut-container
+                
+                // create shortcut-edit
+                newShortcutEdit = document.createElement('div');
+                newShortcutEdit.classList.add("shortcut-edit"); // add class
+                newShortcutEdit.hidden = true; // set hidden
+                newShortcut.appendChild(newShortcutEdit); // add shorcut-edit to shortcut
+
+                // create a
+                newA = document.createElement('a');
+                newA.href = link; // set link
+                newA.title = shortcutName; // set title
+                newShortcut.appendChild(newA); // add a to shortcut
+
+                // create shortcut-name
+                newShortcutName = document.createElement('div');
+                newShortcutName.classList.add("shortcut-name"); // add class
+                newShortcutName.textContent = shortcutName; // set textContent
+                newShortcut.appendChild(newShortcutName); // add shorcut-name to shortcut
+            }
         }
-        const newDiv = document.createElement('div');
-        newDiv.textContent = "new";
-        document.querySelector("#group1 > div.shorcut-container.ui-sortable").appendChild(newDiv);
+        // make group sortable
+        $( function() {
+            $( "#main" ).sortable({
+            placeholder: "placeholder-group",
+            handle: ".handle"
+            });
+        } );
+        
+        $( function() {
+        $( ".shortcut-container" ).sortable({
+            // helper: "clone",
+            forceHelperSize: true,
+            connectWith: ".shortcut-container",
+            tolerance: "pointer"
+        })
+        } );
     }
 };
 
-
 /*
-<div id="group1" class="group ui-state-default">
+<div id="group-1" class="group">
     <div class="handle"><i class="fa-solid fa-arrows-up-down"></i></div>
-        <div class="group-name">MAIN</div>
-            <div class="shorcut-container">
-                <div class="shortcut">
-                    <div class="shortcut-edit">
-                        <button><i class="fa-solid fa-pen"></i></button>
-                        <button><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                    <a href="https://www.youtube.com/"></a>
-                    <div class="shortcut-content">Youtube</div>
-                </div>
-        <div class="shortcut">2</div>
-        <div class="shortcut">3</div>
-        <div class="shortcut">4</div>
-        <div class="shortcut">5</div>
-        <div class="shortcut">6</div>
-        <div class="shortcut">7</div>
-        <div class="shortcut">8</div>
-        <div class="shortcut">9</div>
-        <div class="shortcut">10
-            <input type="color" id="colorInput" value="#ff0000">
+    <div class="group-name" style="background-color: #4371ba">MAIN</div>
+    <div class="shortcut-container">
+        <div class="shortcut" style="background-color: #6c8d91">
+            <div class="shortcut-edit" hidden></div>
+            <a href="https://www.google.com/" title="Google"></a>
+            <div class="shortcut-name">Google</div>
+        </div>
+        <div class="shortcut" style="background-color: #2d9268">
+            <div class="shortcut-edit" hidden></div>
+            <a href="https://www.youtube.com/" title="Youtube"></a>
+            <div class="shortcut-name">Youtube</div>
+        </div>
+        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+        <div class="shortcut" style="background-color: #3f1e9b">
+            <div class="shortcut-edit" hidden></div>
+            <a href="https://www.instagram.com/" title="Instagram"></a>
+            <div class="shortcut-name">Instagram</div>
+        </div>
+        <!-- <div class="shortcut" style="background-color: #6c8d91">10
+            <input type="color" id="colorInput">
+        </div> -->
+        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+        <!-- <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div> -->
+        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
+        <div class="shortcut" style="background-color: #3f1e9b">
+            <div class="shortcut-edit" hidden></div>
+            <a href="https://www.instagram.com/" title="Instagram"></a>
+            <div class="shortcut-name">Instagram</div>
         </div>
     </div>
 </div>
+
+<div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
 */
 
 // let data = [
