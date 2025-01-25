@@ -1,42 +1,43 @@
+createShortcut();
+
 document.getElementById('uploadBtn').addEventListener('change', function(event) {
-  // only get the first file
-  const file = event.target.files[0];
+    // only get the first file
+    const file = event.target.files[0];
 
-  if (file) {
-      const reader = new FileReader();
+    if (file) {
+        const reader = new FileReader();
 
-      reader.onload = function(e) {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, defval: null}); // defval is to get the blank cell value
-          console.log(jsonData); // Access your JSON data here
-          // store data
-          localStorage.setItem('shortcut_data', JSON.stringify(jsonData));
-          // update data info
-          now = new Date();
-          shortcutDataTime = now.toLocaleString('vi-VN');
-          localStorage.setItem('shortcut_data_time', shortcutDataTime);
-          // update interface
-          // updateInterface();
-      };
+        reader.onload = function(e) {
+            // read data from excel
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {raw: false, defval: null}); // defval is to get the blank cell value
 
-      reader.readAsArrayBuffer(file); // Read the file as an array buffer
+            // store data
+            localStorage.setItem('shortcut_data', JSON.stringify(jsonData));
 
-  } else {
-      console.log('No file selected');
-  }
+            // store data time
+            now = new Date();
+            shortcutDataTime = now.toLocaleString('vi-VN');
+            localStorage.setItem('shortcut_data_time', shortcutDataTime);
+
+            // create shortcuts based on data stored
+            createShortcut();
+        };
+        reader.readAsArrayBuffer(file); // Read the file as an array buffer
+
+    } else {
+        console.log('No file selected');
+    }
 });
 
 document.getElementById('copyBtn').addEventListener('click', () => {
     data_time = localStorage.getItem('shortcut_data_time');
-    console.log(data_time);
-    shortcutCodes = localStorage.getItem('shortcut_data');
-    shortcutCodesParsed = JSON.parse(shortcutCodes);
-    console.log(shortcutCodes)
-    console.log(shortcutCodesParsed)
+    storedCodes = localStorage.getItem('shortcut_data');
+    storedCodesJson = JSON.parse(storedCodes);
     // Use the Clipboard API to copy the text
-    navigator.clipboard.writeText(shortcutCodes);
-    alert(`Codes copied: ${shortcutCodes}`);
+    navigator.clipboard.writeText(storedCodes);
+    alert(`Codes copied: ${storedCodes}`);
 });
 
 
@@ -51,10 +52,28 @@ document.getElementById('clearBtn').addEventListener('click', () => {
     }
 });
 
-let currentShortcutJson = [];
 
-document.getElementById('downloadBtn').addEventListener('click', getCurrentShortcuts);
-function getCurrentShortcuts() {
+// UPDATE AND STORE DATA WHEN THERE ARE CHANGES
+function convertRbgToHex(bgStyleString) {
+    hex = '';
+    if (bgStyleString.includes("rgb")) {
+        rgbValuesAsString = bgStyleString.match(/\d+/g); // Use regex to find all numbers
+        rgbValuesAsNumber = rgbValuesAsString.map(Number); // Convert strings to numbers
+        rHex = rgbValuesAsNumber[0].toString(16).padStart(2, '0'); // 2 is the length, "0" will be added if the string is only 1-digit long
+        gHex = rgbValuesAsNumber[1].toString(16).padStart(2, '0');
+        bHex = rgbValuesAsNumber[2].toString(16).padStart(2, '0');
+        hex = `#${rHex}${gHex}${bHex}`;
+    }
+    else {
+        hex = bgStyleString.slice(-7);
+    }
+    return hex;
+}
+
+function updateCurrentCodes() {
+    // clear current codes
+    currentCodesJson = [];
+
     // find all groupID from class "group"
     groupElements = document.querySelectorAll('.group');
     groupIDs = Array.from(groupElements).map(element => element.id);
@@ -62,10 +81,13 @@ function getCurrentShortcuts() {
     // loop thru all groupIDs
     for (i = 0; i < groupIDs.length; ++i) {
         // find groupName
-        group = document.querySelector(`#${groupIDs[i]}`);
+        groupID = groupIDs[i];
+        group = document.querySelector(`#${groupID}`);
         groupName = group.children[1].textContent;
         // find groupBg
-        groupBg = group.children[1].getAttribute('style').slice(-7);
+        groupBgStyle = group.children[1].getAttribute('style');
+        groupBg = convertRbgToHex(groupBgStyle);
+        
         // loop thru all shortcuts
         shortcutContainer = group.children[2];
         for (let j = 0; j < shortcutContainer.children.length; j++) {
@@ -78,7 +100,8 @@ function getCurrentShortcuts() {
                 // shortcutName, link, shortcutBg
                 shortcutName = shortcut.children[2].textContent;
                 link = shortcut.children[1].href;
-                shortcutBg = shortcut.getAttribute('style').slice(-7);
+                shortcutBgStyle = shortcut.getAttribute('style');
+                shortcutBg = convertRbgToHex(shortcutBgStyle);
             }
             else {
                 shortcutName = null;
@@ -86,38 +109,62 @@ function getCurrentShortcuts() {
                 shortcutBg = null;
             }
             toStore = {
+                "groupID": groupID,
                 "groupName": groupName,
                 "groupBg": groupBg,
                 "shortcutName": shortcutName,
                 "link": link,
                 "shortcutBg": shortcutBg
             };
-            currentShortcutJson.push(toStore);
-            currentShortcutsCodes = JSON.stringify(currentShortcutJson);
+            currentCodesJson.push(toStore);
         }
     }
-    console.log(currentShortcutJson);
-    console.log(currentShortcutsCodes);
+    currentCodes = JSON.stringify(currentCodesJson);
+    storedCodes = localStorage.getItem('shortcut_data');
+    if (currentCodes !== storedCodes) {
+        // store data
+        localStorage.setItem('shortcut_data', currentCodes);
+
+        // store data time
+        now = new Date();
+        shortcutDataTime = now.toLocaleString('vi-VN');
+        localStorage.setItem('shortcut_data_time', shortcutDataTime);
+        
+        console.log('Data updated');
+    }
 }
 
-document.getElementById('pasteBtn').addEventListener('click', createShortcut);
+
+document.getElementById('pasteBtn').addEventListener('click', () => {
+    codes = prompt('Paste your code here:');
+    if (codes != "null" || codes != null) {
+        // store data
+        localStorage.setItem('shortcut_data', codes);
+        // update data info
+        now = new Date();
+        shortcutDataTime = now.toLocaleString('vi-VN');
+        localStorage.setItem('shortcut_data_time', shortcutDataTime);
+        // create shortcuts
+        createShortcut();
+    }
+});
+
 function createShortcut() {
-    shortcutCodes = localStorage.getItem('shortcut_data');
-    shortcutCodesParsed = JSON.parse(localStorage.getItem('shortcut_data'));
-    if (shortcutCodes) {
+    storedCodes = localStorage.getItem('shortcut_data');
+    storedCodesJson = JSON.parse(localStorage.getItem('shortcut_data'));
+    if (storedCodes) {
         // delete all current elements in main
         mainDiv = document.getElementById('main');
         while (mainDiv.firstChild) {
             mainDiv.removeChild(mainDiv.firstChild);
         }
-
-        for (i = 0; i < shortcutCodesParsed.length; i++) {
-            groupID = shortcutCodesParsed[i]["groupID"];
-            groupName = shortcutCodesParsed[i]["groupName"];
-            groupBg = shortcutCodesParsed[i]["groupBg"];
-            shortcutName = shortcutCodesParsed[i]["shortcutName"];
-            link = shortcutCodesParsed[i]["link"];
-            shortcutBg = shortcutCodesParsed[i]["shortcutBg"];
+        for (i = 0; i < storedCodesJson.length; i++) {
+            groupID = storedCodesJson[i]["groupID"];
+            groupName = storedCodesJson[i]["groupName"];
+            groupBg = storedCodesJson[i]["groupBg"];
+            shortcutName = storedCodesJson[i]["shortcutName"];
+            link = storedCodesJson[i]["link"];
+            shortcutBg = storedCodesJson[i]["shortcutBg"];
 
             // create group, handle, group-name, shortcut-container if not available
             if (!mainDiv.querySelector(`#${groupID}`)) {
@@ -186,7 +233,10 @@ function createShortcut() {
         $( function() {
             $( "#main" ).sortable({
             placeholder: "placeholder-group",
-            handle: ".handle"
+            handle: ".handle",
+            stop: function() {
+                updateCurrentCodes();
+            }
             });
         } );
         
@@ -195,216 +245,23 @@ function createShortcut() {
             // helper: "clone",
             forceHelperSize: true,
             connectWith: ".shortcut-container",
-            tolerance: "pointer"
+            tolerance: "pointer",
+            stop: function() {
+                updateCurrentCodes();
+            }
         })
         } );
     }
 };
 
-/*
-<div id="group-1" class="group">
-    <div class="handle"><i class="fa-solid fa-arrows-up-down"></i></div>
-    <div class="group-name" style="background-color: #4371ba">MAIN</div>
-    <div class="shortcut-container">
-        <div class="shortcut" style="background-color: #6c8d91">
-            <div class="shortcut-edit" hidden></div>
-            <a href="https://www.google.com/" title="Google"></a>
-            <div class="shortcut-name">Google</div>
-        </div>
-        <div class="shortcut" style="background-color: #2d9268">
-            <div class="shortcut-edit" hidden></div>
-            <a href="https://www.youtube.com/" title="Youtube"></a>
-            <div class="shortcut-name">Youtube</div>
-        </div>
-        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
-        <div class="shortcut" style="background-color: #3f1e9b">
-            <div class="shortcut-edit" hidden></div>
-            <a href="https://www.instagram.com/" title="Instagram"></a>
-            <div class="shortcut-name">Instagram</div>
-        </div>
-        <!-- <div class="shortcut" style="background-color: #6c8d91">10
-            <input type="color" id="colorInput">
-        </div> -->
-        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
-        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
-        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
-        <!-- <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div> -->
-        <div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
-        <div class="shortcut" style="background-color: #3f1e9b">
-            <div class="shortcut-edit" hidden></div>
-            <a href="https://www.instagram.com/" title="Instagram"></a>
-            <div class="shortcut-name">Instagram</div>
-        </div>
-    </div>
-</div>
-
-<div class="shortcut blank"><i class="fa-solid fa-plus"></i></div>
-*/
-
-// let data = [
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "Google",
-//       "link": "google.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "YouTube",
-//       "link": "youtube.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "Facebook",
-//       "link": "facebook.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "Instagram",
-//       "link": "instagram.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "WhatsApp",
-//       "link": "whatsapp.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "X (formerly Twitter)",
-//       "link": "x.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "Wikipedia",
-//       "link": "wikipedia.org",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "ChatGPT",
-//       "link": "chatgpt.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "Reddit",
-//       "link": "reddit.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group1",
-//       "groupName": "MAIN",
-//       "groupBg": "",
-//       "shortcutName": "Yahoo",
-//       "link": "yahoo.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group2",
-//       "groupName": "SUPP",
-//       "groupBg": "",
-//       "shortcutName": "Amazon",
-//       "link": "amazon.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group2",
-//       "groupName": "SUPP",
-//       "groupBg": "",
-//       "shortcutName": "LinkedIn",
-//       "link": "linkedin.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group2",
-//       "groupName": "SUPP",
-//       "groupBg": "",
-//       "shortcutName": "Netflix",
-//       "link": "netflix.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group2",
-//       "groupName": "SUPP",
-//       "groupBg": "",
-//       "shortcutName": "eBay",
-//       "link": "ebay.com",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group2",
-//       "groupName": "SUPP",
-//       "groupBg": "",
-//       "shortcutName": "",
-//       "link": "",
-//       "shortcutBg": ""
-//   },
-//   {
-//       "groupID": "group2",
-//       "groupName": "SUPP",
-//       "groupBg": "",
-//       "shortcutName": "Pinterest",
-//       "link": "pinterest.com",
-//       "shortcutBg": ""
-//   }
-// ]
-
-// console.log(data);
-// console.log(data[3]["shortcutName"]);
-
-
-// groups [groupID, groupName, groupBg]
-// shortcuts [shortcutName, link, shortcutBg]
-
-
-// document.getElementById('downloadBtn').addEventListener('click', function() {
-//   const data = [
-//       ["Name", "Age", "City"],
-//       ["Alice", 30, "New York"],
-//       ["Bob", 25, "Los Angeles"],
-//       ["Charlie", 35, "Chicago"]
-//   ];
-
-//   let csvContent = "data:text/csv;charset=utf-8," 
-//       + data.map(e => e.join(",")).join("\n");
-
-//   const encodedUri = encodeURI(csvContent);
-//   const link = document.createElement("a");
-//   link.setAttribute("href", encodedUri);
-//   link.setAttribute("download", "data.csv");
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-// });
-
 // make group sortable
 $( function() {
   $( "#main" ).sortable({
     placeholder: "placeholder-group",
-    handle: ".handle"
+    handle: ".handle",
+    stop: function() {
+        updateCurrentCodes();
+    }
   });
 } );
 
@@ -413,6 +270,17 @@ $( ".shortcut-container" ).sortable({
     // helper: "clone",
     forceHelperSize: true,
     connectWith: ".shortcut-container",
-    tolerance: "pointer"
+    tolerance: "pointer",
+    stop: function() {
+        updateCurrentCodes();
+    }
 })
 } );
+
+
+// function to add blank at the end     
+// function to update codes when changes are made   V
+// style buttons, update info when there is data
+// edit mode
+// make blank editable
+// style groups
