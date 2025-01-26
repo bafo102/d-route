@@ -69,7 +69,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
         while (mainDiv.firstChild) {
             mainDiv.removeChild(mainDiv.firstChild);
         }
-        mainDiv.innerHTML = '<div id="group-1" class="group blank" style="background-color: lightgray;"><i class="fa-solid fa-folder-plus"></i></div>';
+        mainDiv.innerHTML = '<div id="group-1" class="group blank only"><i class="fa-solid fa-folder-plus"></i></div>';
     }
 });
 
@@ -472,7 +472,7 @@ $( ".shortcut-container" ).sortable({
 // function to add blank group          V
 // set default html                     V
 // style buttons                        V
-// edit mode by right click
+// edit mode by right click             
 // make blank editable
 // style groups
 
