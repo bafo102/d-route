@@ -1,5 +1,9 @@
+// CREATE SHORTCUTS BASED ON STORED DATA
 createShortcut();
+checkAndAddBlankShortcuts();
+rearrangeGroupIds();
 
+// UPLOAD DATA
 document.getElementById('uploadBtn').addEventListener('change', function(event) {
     // only get the first file
     const file = event.target.files[0];
@@ -23,6 +27,12 @@ document.getElementById('uploadBtn').addEventListener('change', function(event) 
 
             // create shortcuts based on data stored
             createShortcut();
+
+            // check and add blank shortcuts
+            checkAndAddBlankShortcuts();
+
+            // rearrange group ids
+            rearrangeGroupIds();
         };
         reader.readAsArrayBuffer(file); // Read the file as an array buffer
 
@@ -31,6 +41,7 @@ document.getElementById('uploadBtn').addEventListener('change', function(event) 
     }
 });
 
+// COPY CODES
 document.getElementById('copyBtn').addEventListener('click', () => {
     data_time = localStorage.getItem('shortcut_data_time');
     storedCodes = localStorage.getItem('shortcut_data');
@@ -40,7 +51,7 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     alert(`Codes copied: ${storedCodes}`);
 });
 
-
+// CLEAR DATA
 document.getElementById('clearBtn').addEventListener('click', () => {
     if (confirm('Clear all data?')) {
         // clear shortcut data
@@ -70,6 +81,8 @@ function convertRbgToHex(bgStyleString) {
     return hex;
 }
 
+
+// FUNCTION TO UPDATE CURRENT CODES
 function updateCurrentCodes() {
     // clear current codes
     currentCodesJson = [];
@@ -134,9 +147,9 @@ function updateCurrentCodes() {
     }
 }
 
-
+// PASTE CODES
 document.getElementById('pasteBtn').addEventListener('click', () => {
-    codes = prompt('Paste your code here:');
+    codes = prompt('Paste your codes here:');
     if (codes != "null" || codes != null) {
         // store data
         localStorage.setItem('shortcut_data', codes);
@@ -149,6 +162,7 @@ document.getElementById('pasteBtn').addEventListener('click', () => {
     }
 });
 
+// FUNCTION TO CREATE SHORTCUTS
 function createShortcut() {
     storedCodes = localStorage.getItem('shortcut_data');
     storedCodesJson = JSON.parse(localStorage.getItem('shortcut_data'));
@@ -160,6 +174,9 @@ function createShortcut() {
         }
         for (i = 0; i < storedCodesJson.length; i++) {
             groupID = storedCodesJson[i]["groupID"];
+            if (groupID == null) {
+                groupID = "group-null"
+            }
             groupName = storedCodesJson[i]["groupName"];
             groupBg = storedCodesJson[i]["groupBg"];
             shortcutName = storedCodesJson[i]["shortcutName"];
@@ -254,13 +271,56 @@ function createShortcut() {
     }
 };
 
-// make group sortable
+
+// FUNCTION TO CHECK AND ADD BLANK SHORTCUTS
+function checkAndAddBlankShortcuts() {
+    // find all groupID from class "group"
+    groupElements = document.querySelectorAll('.group');
+    groupIDs = Array.from(groupElements).map(element => element.id);
+
+    // loop thru all groupIDs
+    for (i = 0; i < groupIDs.length; ++i) {
+        // find groupName
+        groupID = groupIDs[i];
+        group = document.querySelector(`#${groupID}`);
+        shortcutContainer = group.children[2];
+        numberOfShortcuts = shortcutContainer.children.length;
+        lastShorcut = shortcutContainer.children[numberOfShortcuts - 1];
+
+        if (numberOfShortcuts < 10 && !lastShorcut.classList.contains('blank')) {
+            newBlankShortcut = document.createElement('div');
+            newBlankShortcut.classList.add("shortcut"); // add class
+            newBlankShortcut.classList.add("blank"); // add class
+            newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
+            shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
+        }
+    }
+    // update codes
+    updateCurrentCodes();
+};
+
+// FUNCTION TO REARRANGE GROUP IDS
+function rearrangeGroupIds() {
+    // find all groups as children of main
+    main = document.querySelector('#main');
+    // loop thru all children
+    for (i = 0; i < main.children.length; ++i) {
+        group = main.children[i];
+        group.id = `group-${i+1}`;
+    }
+    // update codes
+    updateCurrentCodes();
+};
+
+// MAKE SORTABLES
 $( function() {
   $( "#main" ).sortable({
     placeholder: "placeholder-group",
     handle: ".handle",
     stop: function() {
         updateCurrentCodes();
+        checkAndAddBlankShortcuts();
+        rearrangeGroupIds();
     }
   });
 } );
@@ -273,14 +333,20 @@ $( ".shortcut-container" ).sortable({
     tolerance: "pointer",
     stop: function() {
         updateCurrentCodes();
+        checkAndAddBlankShortcuts();
+        rearrangeGroupIds();
     }
 })
 } );
 
 
-// function to add blank at the end     
+// function to add blank at the end     V  
 // function to update codes when changes are made   V
+// function to rearrange groupIDs       V
 // style buttons, update info when there is data
 // edit mode
 // make blank editable
 // style groups
+// download excel
+
+
