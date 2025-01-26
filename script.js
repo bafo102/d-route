@@ -64,6 +64,12 @@ document.getElementById('clearBtn').addEventListener('click', () => {
         localStorage.removeItem('shortcut_data_time');
         // update header buttons
         updateHeader();
+        // restore default html
+        mainDiv = document.getElementById('main');
+        while (mainDiv.firstChild) {
+            mainDiv.removeChild(mainDiv.firstChild);
+        }
+        mainDiv.innerHTML = '<div id="group-1" class="group blank" style="background-color: lightgray;"><i class="fa-solid fa-folder-plus"></i></div>';
     }
 });
 
@@ -156,9 +162,18 @@ function updateCurrentCodes() {
             currentCodesJson.push(toStore);
         };
     }
+
+    // check last group and remove from codes if blank
+    lastObject = currentCodesJson[currentCodesJson.length - 1];
+    if (lastObject) {
+        if (lastObject["groupName"] == null && lastObject["groupBg"] == null) {
+            currentCodesJson.pop();
+        }
+    }
+
     currentCodes = JSON.stringify(currentCodesJson);
     storedCodes = localStorage.getItem('shortcut_data');
-    if (currentCodes !== storedCodes) {
+    if (currentCodes !== storedCodes && currentCodes.length == 0) {
         // store data
         localStorage.setItem('shortcut_data', currentCodes);
 
@@ -286,6 +301,8 @@ function createShortcut() {
             handle: ".handle",
             stop: function() {
                 updateCurrentCodes();
+                checkAndAddBlanks();
+                rearrangeGroupIds();
             }
             });
         } );
@@ -298,6 +315,8 @@ function createShortcut() {
             tolerance: "pointer",
             stop: function() {
                 updateCurrentCodes();
+                checkAndAddBlanks();
+                rearrangeGroupIds();
             }
         })
         } );
@@ -313,37 +332,48 @@ function checkAndAddBlanks() {
     lastID = groupIDs[groupIDs.length - 1]
     lastGroupElement = document.querySelector(`#${lastID}`);
 
-    if (!lastGroupElement.classList.contains("blank")) {
-        newBlankGroup = document.createElement('div');
-        newBlankGroup.setAttribute("id", `group-${groupIDs.length + 1}`); // set id
-        newBlankGroup.classList.add("group"); // add class
-        newBlankGroup.classList.add("blank"); // add class
-        newBlankGroup.innerHTML = '<i class="fa-solid fa-folder-plus"></i>'; // add icon
-        // newBlankGroup.textContent = " Group"; // set textContent
-        document.querySelector("#main").appendChild(newBlankGroup); // add shorcut blank to main
-    }
-    
-    // loop thru all groupIDs to check shortcut
-    for (i = 0; i < groupIDs.length; ++i) {
-        // find groupName
-        groupID = groupIDs[i];
-        group = document.querySelector(`#${groupID}`);
+    // only execute if there is a group
+    if (lastGroupElement != null) {
 
-        // if group not blank
-        if (!group.classList.contains("blank")) {
-            shortcutContainer = group.children[2];
-            numberOfShortcuts = shortcutContainer.children.length;
-            lastShorcut = shortcutContainer.children[numberOfShortcuts - 1];
+        // check and create blank group
+        if (!lastGroupElement.classList.contains("blank")) {
+            newBlankGroup = document.createElement('div');
+            newBlankGroup.setAttribute("id", `group-${groupIDs.length + 1}`); // set id
+            newBlankGroup.classList.add("group"); // add class
+            newBlankGroup.classList.add("blank"); // add class
+            newBlankGroup.innerHTML = '<i class="fa-solid fa-folder-plus"></i>'; // add icon
+            document.querySelector("#main").appendChild(newBlankGroup); // add shorcut blank to main
+        }
+        
+        // loop thru all groupIDs to check and create blank shortcut
+        for (i = 0; i < groupIDs.length; ++i) {
+            // find groupName
+            groupID = groupIDs[i];
+            group = document.querySelector(`#${groupID}`);
+            
+            // if shortcutContainer not blank
+            if (!group.classList.contains("blank")) {
+                shortcutContainer = group.children[2];
+                numberOfShortcuts = shortcutContainer.children.length;
+                lastShortcut = shortcutContainer.children[numberOfShortcuts - 1];
 
-            if (numberOfShortcuts < 10 && !lastShorcut.classList.contains('blank')) {
-                newBlankShortcut = document.createElement('div');
-                newBlankShortcut.classList.add("shortcut"); // add class
-                newBlankShortcut.classList.add("blank"); // add class
-                newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
-                shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
+                // add shortcut if shortcutContainer has less than 10 shortcuts
+                if (numberOfShortcuts < 10 && !lastShortcut.classList.contains('blank')) {
+                    newBlankShortcut = document.createElement('div');
+                    newBlankShortcut.classList.add("shortcut"); // add class
+                    newBlankShortcut.classList.add("blank"); // add class
+                    newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
+                    shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
+                }
+
+                // remove last shortcut if shortcutContainer has more than 10 shortcuts
+                if (numberOfShortcuts > 10 && lastShortcut.classList.contains('blank')) {
+                    lastShortcut = shortcutContainer.children[numberOfShortcuts - 1];
+                    lastShortcut.remove();
+                }
             }
-        };
-    }
+        }
+    };
     // update codes
     updateCurrentCodes();
 };
@@ -440,7 +470,7 @@ $( ".shortcut-container" ).sortable({
 // function to update header            V
 // function to download data            V
 // function to add blank group          V
-// set default html
+// set default html                     V
 // style buttons                        V
 // edit mode by right click
 // make blank editable

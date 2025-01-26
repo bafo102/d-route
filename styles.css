@@ -79,7 +79,7 @@ button:disabled:hover {
     align-items: center;
     font-weight: bold;
     margin-left: calc((100vw - 88vw - 10vh)/2);
-    background-color: #ffffff;
+    /* background-color: #ffffff; */
 }
 
 .group.blank:hover {
@@ -119,8 +119,6 @@ a {
     width: 8vw;
     position: absolute;
     z-index: 2;
-    /* background-color: pink; */
-    /* opacity: 70%; */
 }
 
 .shortcut-name {
@@ -129,7 +127,6 @@ a {
     max-height: 5vh;
     min-width: 5vw;
     max-width: 7vw;
-    /* position: absolute; */
     display: flex;
     align-items: top;
     justify-content: center;
@@ -138,7 +135,6 @@ a {
     border-radius: 30px;
     background-color: #ffffff;
     overflow-wrap: break-word;
-    /* text-overflow: ellipsis; */
 }
 
 
