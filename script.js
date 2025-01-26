@@ -124,8 +124,8 @@ function updateCurrentCodes() {
                 // if shortcut not blank
                 if (!shortcutContainer.children[j].classList.contains('blank')) {
                     // shortcutName, link, shortcutBg
-                    shortcutName = shortcut.children[2].textContent;
-                    link = shortcut.children[1].href;
+                    shortcutName = shortcut.children[1].textContent;
+                    link = shortcut.children[0].href;
                     shortcutBgStyle = shortcut.getAttribute('style');
                     shortcutBg = convertRbgToHex(shortcutBgStyle);
                 }
@@ -218,7 +218,6 @@ function createShortcut() {
         while (mainDiv.firstChild) {
             mainDiv.removeChild(mainDiv.firstChild);
         }
-
         // loop thru all objects in Json
         for (i = 0; i < storedCodesJson.length; i++) {
             groupID = storedCodesJson[i]["groupID"];
@@ -273,12 +272,6 @@ function createShortcut() {
                     newShortcut.classList.add("shortcut"); // add class
                     newShortcut.setAttribute("style", `background-color: ${shortcutBg}`); // set style
                     shortcutContainer.appendChild(newShortcut); // add shorcut to shortcut-container
-                    
-                    // create shortcut-edit
-                    newShortcutEdit = document.createElement('div');
-                    newShortcutEdit.classList.add("shortcut-edit"); // add class
-                    newShortcutEdit.hidden = true; // set hidden
-                    newShortcut.appendChild(newShortcutEdit); // add shorcut-edit to shortcut
 
                     // create a
                     newA = document.createElement('a');
@@ -460,10 +453,97 @@ $( ".shortcut-container" ).sortable({
 })
 } );
 
-// document.querySelector(".shortcut").addEventListener("contextmenu", (event) => {
-//     console.log("right clicked");
+// OPEN CONTEXT MENU
+contextMenu = document.querySelector("#context-menu");
+document.querySelectorAll('.shortcut, .group-name').forEach(item => {
+    if (!item.classList.contains("blank")) {
+        item.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            contextMenu.hidden = false;
+            contextMenu.style.top = event.pageY + "px";
+            contextMenu.style.left = event.pageX + "px";
+    
+            // Hide the context menu on click elsewhere
+            document.addEventListener('click', () => {
+                contextMenu.hidden = true;
+            });
+        });
+    }
+});
 
-// });
+// OPEN DIALOG BY CLICKING "EDIT"
+document.querySelector("#edit-item").addEventListener("click", () => {
+    document.querySelector("#dialog").hidden = false;
+    document.querySelector("#darken-layer").hidden = false;
+});
+
+// CLOSE DIALOG
+// by clicking cancel
+document.querySelector("#dialog-cancel").addEventListener("click", () => {
+    // show darken layer
+    document.querySelector("#darken-layer").hidden = true;
+    // show dialog
+    document.querySelector("#dialog").hidden = true;
+});
+// by clicking outside dialog
+document.querySelector("#darken-layer").addEventListener("click", () => {
+    // show darken layer
+    document.querySelector("#darken-layer").hidden = true;
+    // show dialog
+    document.querySelector("#dialog").hidden = true;
+});
+
+
+// FUNCTION TO SHOW COMPONENTS
+function checkClickedElement(event) {
+    clickedElement = event.target;
+    if (clickedElement.tagName == 'A' || clickedElement.className == "shortcut blank") { // A is the tagName for <a>, meaning this element is a shorcut
+        // hide all for group
+        document.querySelector("#dialog-for-group").hidden = true;
+        // show all for shortcut
+        document.querySelector("#dialog-for-shortcut").hidden = false;
+    }
+    else { // if element is group-name
+        // show all for group
+        document.querySelector("#dialog-for-group").hidden = false;
+        // hide all for shortcut
+        document.querySelector("#dialog-for-shortcut").hidden = true;
+    }
+}
+
+// SHOW COMPONENTS BY CLICKING "EDIT"
+document.querySelectorAll('.shortcut:not(.blank), .group-name').forEach(item => {
+    item.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+        // identify element to be right-clicked on
+        checkClickedElement(event);
+        // open context menu
+        contextMenu.hidden = false;
+        contextMenu.style.top = event.pageY + "px";
+        contextMenu.style.left = event.pageX + "px";
+    });
+});
+
+// SHOW COMPONENT AND OPEN DIALOG BY CLICKING BLANKS
+document.querySelectorAll('.blank').forEach(item => {
+    item.addEventListener('click', (event) => {
+        event.preventDefault();
+        // identify element to be right-clicked on
+        checkClickedElement(event);
+        // show darken layer
+        document.querySelector("#darken-layer").hidden = false;
+        // show dialog
+        document.querySelector("#dialog").hidden = false;
+    });
+});
+
+
+
+
+
+// // DELETE GROUP AND SHORTCUT
+// deleteItem = document.querySelector("#delete-item");
+
 // function to add blank at the end     V  
 // function to update codes when changes are made   V
 // function to rearrange groupIDs       V
