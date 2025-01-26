@@ -13,8 +13,39 @@
     background-color: lightgrey;
     margin-bottom: 2vh;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: left;
     align-items: center;
+}
+
+input[type="file"] {
+    display: none; /* Hide the default file input */
+}
+
+#header > div {
+    width: 13vw;
+    margin-left: calc((100vw - 88vw - 10vh)/2);
+    display: flex;
+    justify-content: space-between;
+}
+
+button {
+    padding: 0.4vh 1vh;
+    border-radius: 30px;
+    border: none;
+    height: 2vh;
+    width: fit-content;
+    font-size: 1.3vh;
+    text-align: center;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #f36584;
+}
+
+button:disabled:hover {
+    background-color: lightgrey;
+    cursor: default;
 }
 
 #main {

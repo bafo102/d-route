@@ -2,9 +2,10 @@
 createShortcut();
 checkAndAddBlankShortcuts();
 rearrangeGroupIds();
+updateHeader();
 
 // UPLOAD DATA
-document.getElementById('uploadBtn').addEventListener('change', function(event) {
+document.getElementById('upload').addEventListener('change', function(event) {
     // only get the first file
     const file = event.target.files[0];
 
@@ -33,6 +34,9 @@ document.getElementById('uploadBtn').addEventListener('change', function(event) 
 
             // rearrange group ids
             rearrangeGroupIds();
+
+            // update header buttons
+            updateHeader();
         };
         reader.readAsArrayBuffer(file); // Read the file as an array buffer
 
@@ -58,8 +62,8 @@ document.getElementById('clearBtn').addEventListener('click', () => {
         localStorage.removeItem('shortcut_data');
         // clear shortcut data store time
         localStorage.removeItem('shortcut_data_time');
-        // // update interface
-        // updateInterface();
+        // update header buttons
+        updateHeader();
     }
 });
 
@@ -150,7 +154,7 @@ function updateCurrentCodes() {
 // PASTE CODES
 document.getElementById('pasteBtn').addEventListener('click', () => {
     codes = prompt('Paste your codes here:');
-    if (codes != "null" || codes != null) {
+    if (codes && codes != "null" && codes != null) {
         // store data
         localStorage.setItem('shortcut_data', codes);
         // update data info
@@ -159,6 +163,15 @@ document.getElementById('pasteBtn').addEventListener('click', () => {
         localStorage.setItem('shortcut_data_time', shortcutDataTime);
         // create shortcuts
         createShortcut();
+
+        // check and add blank shortcuts
+        checkAndAddBlankShortcuts();
+
+        // rearrange group ids
+        rearrangeGroupIds();
+
+        // update header button
+        updateHeader();
     }
 });
 
@@ -312,6 +325,48 @@ function rearrangeGroupIds() {
     updateCurrentCodes();
 };
 
+// UPDATE HEADER BUTTONS
+function updateHeader() {
+    storedCodes = localStorage.getItem('shortcut_data');
+    if (!storedCodes) {
+        document.querySelector('#copyBtn').disabled = true;
+        document.querySelector('#downloadBtn').disabled = true;
+        document.querySelector('#clearBtn').disabled = true;
+    }
+    else {
+        document.querySelector('#copyBtn').disabled = false;
+        document.querySelector('#downloadBtn').disabled = false;
+        document.querySelector('#clearBtn').disabled = false;
+    }
+}
+
+// DOWNLOAD DATA
+document.getElementById('downloadBtn').addEventListener('click', () => {
+    storedCodes = localStorage.getItem('shortcut_data');
+    storedCodesJson = JSON.parse(storedCodes);
+    // Create a new workbook and a worksheet
+    wb = XLSX.utils.book_new();
+    ws_data = storedCodesJson;
+    ws = XLSX.utils.json_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, "data");
+
+    // Generate a file and trigger the download
+    saveTime = getFormattedDateAndTime();
+    XLSX.writeFile(wb, `Shortcut Data - ${saveTime}.xlsx`);
+});
+
+function getFormattedDateAndTime() {
+    now = new Date();
+    year = now.getFullYear();
+    month = String(now.getMonth() + 1).padStart(2, '0');
+    day = String(now.getDate()).padStart(2, '0');
+    hours = String(now.getHours()).padStart(2, '0');
+    minutes = String(now.getMinutes()).padStart(2, '0');
+    seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${day}-${month}-${year} ${hours}.${minutes}.${seconds}`;
+}
+
 // MAKE SORTABLES
 $( function() {
   $( "#main" ).sortable({
@@ -339,11 +394,16 @@ $( ".shortcut-container" ).sortable({
 })
 } );
 
-
+document.querySelector(".shortcut").addEventListener("contextmenu", (event) => {
+    console.log("right clicked");
+});
 // function to add blank at the end     V  
 // function to update codes when changes are made   V
 // function to rearrange groupIDs       V
-// style buttons, update info when there is data
+// function to update header            V
+// function to download data            V
+// set default html
+// style buttons
 // edit mode
 // make blank editable
 // style groups
