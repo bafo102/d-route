@@ -1,6 +1,6 @@
 // CREATE SHORTCUTS BASED ON STORED DATA
 createShortcut();
-checkAndAddBlankShortcuts();
+checkAndAddBlanks();
 rearrangeGroupIds();
 updateHeader();
 
@@ -30,7 +30,7 @@ document.getElementById('upload').addEventListener('change', function(event) {
             createShortcut();
 
             // check and add blank shortcuts
-            checkAndAddBlankShortcuts();
+            checkAndAddBlanks();
 
             // rearrange group ids
             rearrangeGroupIds();
@@ -100,31 +100,51 @@ function updateCurrentCodes() {
         // find groupName
         groupID = groupIDs[i];
         group = document.querySelector(`#${groupID}`);
-        groupName = group.children[1].textContent;
-        // find groupBg
-        groupBgStyle = group.children[1].getAttribute('style');
-        groupBg = convertRbgToHex(groupBgStyle);
-        
-        // loop thru all shortcuts
-        shortcutContainer = group.children[2];
-        for (let j = 0; j < shortcutContainer.children.length; j++) {
-            shortcut = shortcutContainer.children[j];
-            shortcutName = '';
-            link = '';
-            shortcutBg = '';
-            // if shortcut not blank
-            if (!shortcutContainer.children[j].classList.contains('blank')) {
-                // shortcutName, link, shortcutBg
-                shortcutName = shortcut.children[2].textContent;
-                link = shortcut.children[1].href;
-                shortcutBgStyle = shortcut.getAttribute('style');
-                shortcutBg = convertRbgToHex(shortcutBgStyle);
+
+        // if group not blank
+        if (!group.classList.contains("blank")) {
+            groupName = group.children[1].textContent;
+            // find groupBg
+            groupBgStyle = group.children[1].getAttribute('style');
+            groupBg = convertRbgToHex(groupBgStyle);
+            
+            // loop thru all shortcuts
+            shortcutContainer = group.children[2];
+            for (let j = 0; j < shortcutContainer.children.length; j++) {
+                shortcut = shortcutContainer.children[j];
+                shortcutName = '';
+                link = '';
+                shortcutBg = '';
+                // if shortcut not blank
+                if (!shortcutContainer.children[j].classList.contains('blank')) {
+                    // shortcutName, link, shortcutBg
+                    shortcutName = shortcut.children[2].textContent;
+                    link = shortcut.children[1].href;
+                    shortcutBgStyle = shortcut.getAttribute('style');
+                    shortcutBg = convertRbgToHex(shortcutBgStyle);
+                }
+                else {
+                    shortcutName = null;
+                    link = null;
+                    shortcutBg = null;
+                }
+                toStore = {
+                    "groupID": groupID,
+                    "groupName": groupName,
+                    "groupBg": groupBg,
+                    "shortcutName": shortcutName,
+                    "link": link,
+                    "shortcutBg": shortcutBg
+                };
+                currentCodesJson.push(toStore);
             }
-            else {
-                shortcutName = null;
-                link = null;
-                shortcutBg = null;
-            }
+        }
+        else {
+            groupName = null;
+            groupBg = null;
+            shortcutName = null;
+            link = null;
+            shortcutBg = null;
             toStore = {
                 "groupID": groupID,
                 "groupName": groupName,
@@ -134,7 +154,7 @@ function updateCurrentCodes() {
                 "shortcutBg": shortcutBg
             };
             currentCodesJson.push(toStore);
-        }
+        };
     }
     currentCodes = JSON.stringify(currentCodesJson);
     storedCodes = localStorage.getItem('shortcut_data');
@@ -146,8 +166,6 @@ function updateCurrentCodes() {
         now = new Date();
         shortcutDataTime = now.toLocaleString('vi-VN');
         localStorage.setItem('shortcut_data_time', shortcutDataTime);
-        
-        console.log('Data updated');
     }
 }
 
@@ -165,7 +183,7 @@ document.getElementById('pasteBtn').addEventListener('click', () => {
         createShortcut();
 
         // check and add blank shortcuts
-        checkAndAddBlankShortcuts();
+        checkAndAddBlanks();
 
         // rearrange group ids
         rearrangeGroupIds();
@@ -185,78 +203,80 @@ function createShortcut() {
         while (mainDiv.firstChild) {
             mainDiv.removeChild(mainDiv.firstChild);
         }
+
+        // loop thru all objects in Json
         for (i = 0; i < storedCodesJson.length; i++) {
             groupID = storedCodesJson[i]["groupID"];
-            if (groupID == null) {
-                groupID = "group-null"
-            }
             groupName = storedCodesJson[i]["groupName"];
             groupBg = storedCodesJson[i]["groupBg"];
             shortcutName = storedCodesJson[i]["shortcutName"];
             link = storedCodesJson[i]["link"];
             shortcutBg = storedCodesJson[i]["shortcutBg"];
 
-            // create group, handle, group-name, shortcut-container if not available
-            if (!mainDiv.querySelector(`#${groupID}`)) {
-                // create group
-                newGroup = document.createElement('div');
-                newGroup.setAttribute("id", `${groupID}`); // set id
-                newGroup.classList.add("group"); // add class
-                mainDiv.appendChild(newGroup); // add group to main
+            // create normal group, ignore blank group from data
+            if (groupName != null & groupBg != null) {
+                // create group, handle, group-name, shortcut-container if not available
+                if (!mainDiv.querySelector(`#${groupID}`)) {
+                    // create group
+                    newGroup = document.createElement('div');
+                    newGroup.setAttribute("id", `${groupID}`); // set id
+                    newGroup.classList.add("group"); // add class
+                    mainDiv.appendChild(newGroup); // add group to main
 
-                // create handle
-                newHandle = document.createElement('div');
-                newHandle.classList.add("handle"); // add class
-                newHandle.innerHTML = '<i class="fa-solid fa-arrows-up-down"></i>'; // add icon
-                newGroup.appendChild(newHandle); // add handle to group
+                    // create handle
+                    newHandle = document.createElement('div');
+                    newHandle.classList.add("handle"); // add class
+                    newHandle.innerHTML = '<i class="fa-solid fa-arrows-up-down"></i>'; // add icon
+                    newGroup.appendChild(newHandle); // add handle to group
 
-                // create group-name
-                newGroupName = document.createElement('div');
-                newGroupName.classList.add("group-name"); // add class
-                newGroupName.setAttribute("style", `background-color: ${groupBg}`); // set style
-                newGroupName.textContent = groupName; // set textContent
-                newGroup.appendChild(newGroupName); // add group-name to group
+                    // create group-name
+                    newGroupName = document.createElement('div');
+                    newGroupName.classList.add("group-name"); // add class
+                    newGroupName.setAttribute("style", `background-color: ${groupBg}`); // set style
+                    newGroupName.textContent = groupName; // set textContent
+                    newGroup.appendChild(newGroupName); // add group-name to group
 
-                // create shorcut-container
-                newShortcutContainer = document.createElement('div');
-                newShortcutContainer.classList.add("shortcut-container"); // add class
-                newGroup.appendChild(newShortcutContainer); // add shorcut-container to group
-            }
-            
-            // re-declare parent div
-            shortcutContainer = mainDiv.querySelector(`#${groupID} .shortcut-container`);
-
-            // create shortcut
-            if (shortcutName == null || link == null) { // if null
-                newBlankShortcut = document.createElement('div');
-                newBlankShortcut.classList.add("shortcut"); // add class
-                newBlankShortcut.classList.add("blank"); // add class
-                newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
-                shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
-            }
-            else { // if not null
-                newShortcut = document.createElement('div');
-                newShortcut.classList.add("shortcut"); // add class
-                newShortcut.setAttribute("style", `background-color: ${shortcutBg}`); // set style
-                shortcutContainer.appendChild(newShortcut); // add shorcut to shortcut-container
+                    // create shorcut-container
+                    newShortcutContainer = document.createElement('div');
+                    newShortcutContainer.classList.add("shortcut-container"); // add class
+                    newGroup.appendChild(newShortcutContainer); // add shorcut-container to group
+                }
                 
-                // create shortcut-edit
-                newShortcutEdit = document.createElement('div');
-                newShortcutEdit.classList.add("shortcut-edit"); // add class
-                newShortcutEdit.hidden = true; // set hidden
-                newShortcut.appendChild(newShortcutEdit); // add shorcut-edit to shortcut
+                // re-declare parent div
+                shortcutContainer = mainDiv.querySelector(`#${groupID} .shortcut-container`);
 
-                // create a
-                newA = document.createElement('a');
-                newA.href = link; // set link
-                newA.title = shortcutName; // set title
-                newShortcut.appendChild(newA); // add a to shortcut
+                // create shortcut
+                if (shortcutName == null || link == null) { // create blank shorcut
+                    newBlankShortcut = document.createElement('div');
+                    newBlankShortcut.classList.add("shortcut"); // add class
+                    newBlankShortcut.classList.add("blank"); // add class
+                    newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
+                    shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
+                }
+                else { // create normal shortcut
+                    newShortcut = document.createElement('div');
+                    newShortcut.classList.add("shortcut"); // add class
+                    newShortcut.setAttribute("style", `background-color: ${shortcutBg}`); // set style
+                    shortcutContainer.appendChild(newShortcut); // add shorcut to shortcut-container
+                    
+                    // create shortcut-edit
+                    newShortcutEdit = document.createElement('div');
+                    newShortcutEdit.classList.add("shortcut-edit"); // add class
+                    newShortcutEdit.hidden = true; // set hidden
+                    newShortcut.appendChild(newShortcutEdit); // add shorcut-edit to shortcut
 
-                // create shortcut-name
-                newShortcutName = document.createElement('div');
-                newShortcutName.classList.add("shortcut-name"); // add class
-                newShortcutName.textContent = shortcutName; // set textContent
-                newShortcut.appendChild(newShortcutName); // add shorcut-name to shortcut
+                    // create a
+                    newA = document.createElement('a');
+                    newA.href = link; // set link
+                    newA.title = shortcutName; // set title
+                    newShortcut.appendChild(newA); // add a to shortcut
+
+                    // create shortcut-name
+                    newShortcutName = document.createElement('div');
+                    newShortcutName.classList.add("shortcut-name"); // add class
+                    newShortcutName.textContent = shortcutName; // set textContent
+                    newShortcut.appendChild(newShortcutName); // add shorcut-name to shortcut
+                }
             }
         }
         // make group sortable
@@ -285,28 +305,44 @@ function createShortcut() {
 };
 
 
-// FUNCTION TO CHECK AND ADD BLANK SHORTCUTS
-function checkAndAddBlankShortcuts() {
+// FUNCTION TO CHECK AND ADD BLANK SHORTCUTS AND GROUPS
+function checkAndAddBlanks() {
     // find all groupID from class "group"
     groupElements = document.querySelectorAll('.group');
     groupIDs = Array.from(groupElements).map(element => element.id);
+    lastID = groupIDs[groupIDs.length - 1]
+    lastGroupElement = document.querySelector(`#${lastID}`);
 
-    // loop thru all groupIDs
+    if (!lastGroupElement.classList.contains("blank")) {
+        newBlankGroup = document.createElement('div');
+        newBlankGroup.setAttribute("id", `group-${groupIDs.length + 1}`); // set id
+        newBlankGroup.classList.add("group"); // add class
+        newBlankGroup.classList.add("blank"); // add class
+        newBlankGroup.innerHTML = '<i class="fa-solid fa-folder-plus"></i>'; // add icon
+        // newBlankGroup.textContent = " Group"; // set textContent
+        document.querySelector("#main").appendChild(newBlankGroup); // add shorcut blank to main
+    }
+    
+    // loop thru all groupIDs to check shortcut
     for (i = 0; i < groupIDs.length; ++i) {
         // find groupName
         groupID = groupIDs[i];
         group = document.querySelector(`#${groupID}`);
-        shortcutContainer = group.children[2];
-        numberOfShortcuts = shortcutContainer.children.length;
-        lastShorcut = shortcutContainer.children[numberOfShortcuts - 1];
 
-        if (numberOfShortcuts < 10 && !lastShorcut.classList.contains('blank')) {
-            newBlankShortcut = document.createElement('div');
-            newBlankShortcut.classList.add("shortcut"); // add class
-            newBlankShortcut.classList.add("blank"); // add class
-            newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
-            shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
-        }
+        // if group not blank
+        if (!group.classList.contains("blank")) {
+            shortcutContainer = group.children[2];
+            numberOfShortcuts = shortcutContainer.children.length;
+            lastShorcut = shortcutContainer.children[numberOfShortcuts - 1];
+
+            if (numberOfShortcuts < 10 && !lastShorcut.classList.contains('blank')) {
+                newBlankShortcut = document.createElement('div');
+                newBlankShortcut.classList.add("shortcut"); // add class
+                newBlankShortcut.classList.add("blank"); // add class
+                newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
+                shortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to shortcut-container
+            }
+        };
     }
     // update codes
     updateCurrentCodes();
@@ -374,7 +410,7 @@ $( function() {
     handle: ".handle",
     stop: function() {
         updateCurrentCodes();
-        checkAndAddBlankShortcuts();
+        checkAndAddBlanks();
         rearrangeGroupIds();
     }
   });
@@ -388,25 +424,29 @@ $( ".shortcut-container" ).sortable({
     tolerance: "pointer",
     stop: function() {
         updateCurrentCodes();
-        checkAndAddBlankShortcuts();
+        checkAndAddBlanks();
         rearrangeGroupIds();
     }
 })
 } );
 
-document.querySelector(".shortcut").addEventListener("contextmenu", (event) => {
-    console.log("right clicked");
-});
+// document.querySelector(".shortcut").addEventListener("contextmenu", (event) => {
+//     console.log("right clicked");
+
+// });
 // function to add blank at the end     V  
 // function to update codes when changes are made   V
 // function to rearrange groupIDs       V
 // function to update header            V
 // function to download data            V
+// function to add blank group          V
 // set default html
-// style buttons
-// edit mode
+// style buttons                        V
+// edit mode by right click
 // make blank editable
 // style groups
-// download excel
+
+
+
 
 
