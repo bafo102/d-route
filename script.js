@@ -172,8 +172,7 @@ function updateCurrentCodes() {
     }
 
     currentCodes = JSON.stringify(currentCodesJson);
-    storedCodes = localStorage.getItem('shortcut_data');
-    if (currentCodes !== storedCodes && currentCodes.length == 0) {
+    if (currentCodes.length != 0) {
         // store data
         localStorage.setItem('shortcut_data', currentCodes);
 
@@ -454,43 +453,77 @@ $( ".shortcut-container" ).sortable({
 } );
 
 // OPEN CONTEXT MENU
-contextMenu = document.querySelector("#context-menu");
+let targetElement = '';
+let contextMenu = document.querySelector("#context-menu");
+let editItem = document.querySelector("#edit-item");
+let deleteItem = document.querySelector("#delete-item");
 document.querySelectorAll('.shortcut, .group-name').forEach(item => {
-    if (!item.classList.contains("blank")) {
-        item.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            contextMenu.hidden = false;
-            contextMenu.style.top = event.pageY + "px";
-            contextMenu.style.left = event.pageX + "px";
-    
-            // Hide the context menu on click elsewhere
-            document.addEventListener('click', () => {
-                contextMenu.hidden = true;
-            });
+    item.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        // clear all class target from html
+        document.querySelectorAll(".target").forEach(elem => {
+            elem.classList.remove("target");
         });
-    }
+        // assign class to new target
+        targetElement = event.target;
+        if (targetElement.classList.contains("group-name") || targetElement.className == "fa-solid fa-plus") {
+            targetElement = event.target.parentNode;
+        }
+        targetElement.classList.add('target');
+
+        // show context menu
+        contextMenu.hidden = false;
+        contextMenu.style.top = event.pageY + "px";
+        contextMenu.style.left = event.pageX + "px";
+
+        // hide editItem and deleteItem when clicked
+        editItem.addEventListener("click", () => {
+            contextMenu.hidden = true;
+        })
+
+        deleteItem.addEventListener("click", () => {
+            contextMenu.hidden = true;
+        })
+
+        // hide the context menu on click elsewhere
+        contextmenuOverlay = document.querySelector("#contextmenu-overlay");
+        contextmenuOverlay.hidden = false;
+        contextmenuOverlay.addEventListener('click', () => {
+            contextMenu.hidden = true;
+            resetTarget();
+        });
+    });
+
 });
 
 // OPEN DIALOG BY CLICKING "EDIT"
+let dialog = document.querySelector("#dialog");
+let dialogOverlay = document.querySelector("#dialog-overlay");
+
 document.querySelector("#edit-item").addEventListener("click", () => {
-    document.querySelector("#dialog").hidden = false;
-    document.querySelector("#darken-layer").hidden = false;
+    dialog.hidden = false;
+    dialogOverlay.hidden = false;
+    contextMenu.hidden = true;
 });
 
 // CLOSE DIALOG
 // by clicking cancel
 document.querySelector("#dialog-cancel").addEventListener("click", () => {
-    // show darken layer
-    document.querySelector("#darken-layer").hidden = true;
+    // show dialog overlay
+    document.querySelector("#dialog-overlay").hidden = true;
     // show dialog
     document.querySelector("#dialog").hidden = true;
+    // reset target
+    resetTarget();
 });
 // by clicking outside dialog
-document.querySelector("#darken-layer").addEventListener("click", () => {
-    // show darken layer
-    document.querySelector("#darken-layer").hidden = true;
+document.querySelector("#dialog-overlay").addEventListener("click", () => {
+    // show dialog overlay
+    document.querySelector("#dialog-overlay").hidden = true;
     // show dialog
     document.querySelector("#dialog").hidden = true;
+    // reset target
+    resetTarget();
 });
 
 
@@ -512,7 +545,7 @@ function checkClickedElement(event) {
 }
 
 // SHOW COMPONENTS BY CLICKING "EDIT"
-document.querySelectorAll('.shortcut:not(.blank), .group-name').forEach(item => {
+document.querySelectorAll('.shortcut, .group-name').forEach(item => {
     item.addEventListener('contextmenu', function(event) {
         event.preventDefault();
         // identify element to be right-clicked on
@@ -531,18 +564,63 @@ document.querySelectorAll('.blank').forEach(item => {
         // identify element to be right-clicked on
         checkClickedElement(event);
         // show darken layer
-        document.querySelector("#darken-layer").hidden = false;
+        document.querySelector("#dialog-overlay").hidden = false;
         // show dialog
         document.querySelector("#dialog").hidden = false;
     });
 });
 
 
+// DELETE GROUP AND SHORTCUT
+let elementToBeDeleted = '';
+let elementToBeDeletedType = ''; // shortcut & group
+
+document.querySelectorAll('.shortcut, .group-name').forEach(item => {
+    item.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+        elementToBeDeleted = event.target;
+        elementToBeDeletedType = "shortcut";
+        if (!elementToBeDeleted.classList.contains("blank")) {
+            elementToBeDeleted = event.target.parentNode;
+            elementToBeDeletedType = "group";
+        }
+    });
+});
 
 
+function hideContextMenu() {
+    contextMenu.hidden = true;
+}
 
-// // DELETE GROUP AND SHORTCUT
-// deleteItem = document.querySelector("#delete-item");
+document.querySelector("#delete-item").addEventListener("click", async () => {
+    hideContextMenu()
+    // setTimeout(() => {
+    //     //
+    // }, 2000);
+    if (confirm(`Delete this ${elementToBeDeletedType}?`)) {
+        elementToBeDeleted.remove();
+        elementToBeDeleted = '';
+        elementToBeDeletedType = '';
+        updateCurrentCodes();
+        checkAndAddBlanks();
+        rearrangeGroupIds();
+    }
+    else {
+        resetTarget();
+    }
+});
+
+// FUNCTION TO RESET TARGET ELEMENT
+function resetTarget() {
+    // clear all class target from html
+    document.querySelectorAll(".target").forEach(elem => {
+        elem.classList.remove("target");
+    });
+    // hide overlay
+    contextmenuOverlay.hidden = true;
+    // reset elem
+    targetElement = '';
+}
 
 // function to add blank at the end     V  
 // function to update codes when changes are made   V
@@ -552,8 +630,10 @@ document.querySelectorAll('.blank').forEach(item => {
 // function to add blank group          V
 // set default html                     V
 // style buttons                        V
+// add delete function                  V
 // edit mode by right click             
-// make blank editable
+// make blank editable                  V
+// highlight current chosen element     V
 // style groups
 
 
