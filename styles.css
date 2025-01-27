@@ -168,6 +168,7 @@ a {
 .fa-plus, .fa-folder-plus {
     color: #ffffff;
     font-size: 2vh;
+    z-index: 3;
 }
 
 .placeholder-group {
@@ -242,7 +243,12 @@ a {
     padding: 2vh 0 0.5vh 0;
 }
 
-#dialog input {
+#dialog input:not(#shortcut-bg-input-color, #group-bg-input-color) {
+    height: 3vh;
+    padding: 0 0.8vw;
+}
+
+#shortcut-bg-input-color, #group-bg-input-color {
     height: 3vh;
 }
 
