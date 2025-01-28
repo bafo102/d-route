@@ -76,10 +76,11 @@ button:disabled:hover {
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
     font-size: 2vh;
     font-weight: bold;
     cursor: default;
-    /* -webkit-text-stroke: 0.1px white; */
+    padding: 1vh;
 }
 
 .group.blank {
@@ -137,17 +138,14 @@ a {
 .shortcut-name {
     font-size: 1.4vh;
     padding: 0.4vh 0.5vw;
-    max-height: 5vh;
     min-width: 5vw;
     max-width: 7vw;
-    display: flex;
-    align-items: top;
-    justify-content: center;
     text-align: center;
     z-index: 1;
     border-radius: 30px;
     background-color: #ffffff;
-    overflow-wrap: break-word;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 

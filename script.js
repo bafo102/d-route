@@ -248,8 +248,6 @@ document.getElementById('pasteBtn').addEventListener('click', () => {
 function createShortcut() {
     storedCodes = localStorage.getItem('shortcut_data');
     if (storedCodes) {
-        console.log("There is storedCodes");
-        console.log(storedCodes);
         storedCodesJson = JSON.parse(localStorage.getItem('shortcut_data'));
         // delete all current elements in main
         mainDiv = document.getElementById('main');
@@ -510,7 +508,7 @@ $( function() {
 // TARGET ELEMENT
 function getTarget(event) {
     clickedElement = event.target;
-
+    console.log('clickedElement: ',clickedElement);
     // if shortcut
     if (clickedElement.tagName == "A" && !clickedElement.parentNode.classList.contains("blank")) {
         targetElement = clickedElement.parentNode;
@@ -538,6 +536,10 @@ function getTarget(event) {
     }
 
     // if group
+    else if (clickedElement.className == 'group') {
+        targetElement = clickedElement;
+        targetElementType = 'group';
+    }
     else {
         targetElement = clickedElement.parentNode;
         targetElementType = 'group';
@@ -580,6 +582,8 @@ function closeContextMenu() {
     contextMenu.hidden = true;
     // hide contextmenuOverlay
     contextmenuOverlay.hidden = true;
+    // reset target
+    resetTarget();
 }
 
 // add function closeContextMenu to contextmenuOverlay
@@ -717,9 +721,6 @@ dialogOverlay.addEventListener('click', closeDialog);
 
 // DELETE GROUP AND SHORTCUT
 function deletegGroupAndShortcut() {
-    // close context menu
-    closeContextMenu();
-
     // delete element
     confirmMessage = '';
     if (targetElementType == "shortcut") {
@@ -733,13 +734,15 @@ function deletegGroupAndShortcut() {
     }
 
     if (confirm(confirmMessage)) {
+        console.log('targetElement: ',targetElement);
         elementToBeDeleted = targetElement;
+        console.log("elementToBeDeleted: ", elementToBeDeleted);
         elementToBeDeleted.remove();
         elementToBeDeleted = '';
     }
 
-    // reset target
-    resetTarget();
+    // close context menu
+    closeContextMenu();
 
     // update codes
     checkAndAddBlanks(); // already have updateCurrentCodes and convertRbgToHex
@@ -847,6 +850,19 @@ function saveDialogChanges() {
     closeDialog();
     addAllEventListeners();
     updateHeader();
+    // make sortable
+    $( function() {
+        $( ".shortcut-container" ).sortable({
+            // helper: "clone",
+            forceHelperSize: true,
+            connectWith: ".shortcut-container",
+            tolerance: "pointer",
+            stop: function() {
+                checkAndAddBlanks(); // already have updateCurrentCodes and convertRbgToHex
+                rearrangeGroupIds();
+            }
+        })
+    } );
 }
 
 
