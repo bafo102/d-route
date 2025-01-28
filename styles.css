@@ -76,6 +76,7 @@ button:disabled:hover {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 2vh;
     font-weight: bold;
     cursor: default;
     /* -webkit-text-stroke: 0.1px white; */
