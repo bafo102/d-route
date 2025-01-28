@@ -30,9 +30,9 @@ let saveDialog = document.querySelector("#dialog-save");
 let elementToBeDeleted = '';
 
 // CREATE SHORTCUTS BASED ON STORED DATA
-createShortcut();
-checkAndAddBlanks();
-rearrangeGroupIds();
+createShortcut(); // has addAllEventListeners
+checkAndAddBlanks(); // has updateCurrentCodes, which has convertRbgToHex and store data
+rearrangeGroupIds(); // has updateCurrentCodes, which has convertRbgToHex and store data
 updateHeader();
 
 // UPLOAD DATA
@@ -104,6 +104,8 @@ document.getElementById('clearBtn').addEventListener('click', () => {
             mainDiv.removeChild(mainDiv.firstChild);
         }
         mainDiv.innerHTML = '<div id="group-1" class="group blank only"><i class="fa-solid fa-folder-plus"></i></div>';
+        // add all event listeners
+        addAllEventListeners();
     }
 });
 
@@ -206,7 +208,9 @@ function updateCurrentCodes() {
     }
 
     currentCodes = JSON.stringify(currentCodesJson);
-    if (currentCodes.length != 0) {
+    console.log(currentCodes);
+    console.log(currentCodes != "[]");
+    if (currentCodes != "[]") {
         // store data
         localStorage.setItem('shortcut_data', currentCodes);
 
@@ -244,8 +248,10 @@ document.getElementById('pasteBtn').addEventListener('click', () => {
 // FUNCTION TO CREATE SHORTCUTS
 function createShortcut() {
     storedCodes = localStorage.getItem('shortcut_data');
-    storedCodesJson = JSON.parse(localStorage.getItem('shortcut_data'));
     if (storedCodes) {
+        console.log("There is storedCodes");
+        console.log(storedCodes);
+        storedCodesJson = JSON.parse(localStorage.getItem('shortcut_data'));
         // delete all current elements in main
         mainDiv = document.getElementById('main');
         while (mainDiv.firstChild) {
@@ -348,8 +354,7 @@ function createShortcut() {
             }
         })
         } );
-
-        addAllEventListeners();
+    addAllEventListeners();
     }
 };
 
@@ -528,7 +533,7 @@ function getTarget(event) {
         targetElement = clickedElement.parentNode;
         targetElementType = 'group blank';
     }
-    else if (clickedElement.className == "group blank") {
+    else if (clickedElement.className == "group blank" || clickedElement.className == "group blank only") {
         targetElement = clickedElement;
         targetElementType = 'group blank';
     }
@@ -541,6 +546,9 @@ function getTarget(event) {
     
     // add class to target
     targetElement.classList.add("target");
+
+    console.log('targetElement: ',targetElement);
+    console.log('targetElementType: ',targetElementType);
 }
 
 // add function getTarget to shortcut, shortcut blank, group blank when left-clicking
@@ -839,6 +847,7 @@ function saveDialogChanges() {
     // close dialog
     closeDialog();
     addAllEventListeners();
+    updateHeader();
 }
 
 
@@ -884,20 +893,3 @@ function addAllEventListeners() {
     // add function saveDialogChanges to saveDialog
     saveDialog.addEventListener('click', saveDialogChanges);
 }
-
-
-// function to add blank at the end     V  
-// function to update codes when changes are made   V
-// function to rearrange groupIDs       V
-// function to update header            V
-// function to download data            V
-// function to add blank group          V
-// set default html                     V
-// style buttons                        V
-// add delete function                  V
-// edit mode by right click             V
-// make blank editable                  V
-// highlight current chosen element     V
-// add fuction to change rbg to hex after dragging  V
-// update color live in dialog          V
-
