@@ -1,3 +1,34 @@
+// VARIABLE INITIALIZATION
+let targetElement = '';
+let targetElementType = ''; // shortcut / shortcut blank / group blank / group
+
+let contextMenu = document.querySelector("#context-menu");
+let contextmenuOverlay = document.querySelector("#contextmenu-overlay");
+
+let editItem = document.querySelector("#edit-item");
+let deleteItem = document.querySelector("#delete-item");
+
+let dialog = document.querySelector("#dialog");
+let dialogOverlay = document.querySelector("#dialog-overlay");
+
+let dialogName = document.querySelector("#dialog-name");
+
+let groupComponent = document.querySelector("#dialog-for-group");
+let groupNameInput = document.querySelector("#group-name-input");
+let groupBgInputColor = document.querySelector("#group-bg-input-color");
+let groupBgInputText = document.querySelector("#group-bg-input-text");
+
+let shortcutComponent = document.querySelector("#dialog-for-shortcut");
+let shortcutNameInput = document.querySelector("#shortcut-name-input");
+let linkInput = document.querySelector("#link-input");
+let shortcutBgInputColor = document.querySelector("#shortcut-bg-input-color");
+let shortcutBgInputText = document.querySelector("#shortcut-bg-input-text");
+
+let cancelDialog = document.querySelector("#dialog-cancel");
+let saveDialog = document.querySelector("#dialog-save");
+
+let elementToBeDeleted = '';
+
 // CREATE SHORTCUTS BASED ON STORED DATA
 createShortcut();
 checkAndAddBlanks();
@@ -38,39 +69,8 @@ document.getElementById('upload').addEventListener('change', function(event) {
             // update header buttons
             updateHeader();
 
-            // add functions to elements using evenListener
-            // add function getTarget to shortcut, shortcut blank, group blank when left-clicking
-            document.querySelectorAll(".shortcut, .group.blank").forEach(elem => (elem.addEventListener("click", getTarget)));
-
-            // add function getTarget to shortcut, shortcut blank, group when right-clicking
-            document.querySelectorAll(".shortcut, .group:not(.blank)").forEach(elem => (elem.addEventListener("contextmenu", getTarget)));
-
-            // add function openContextMenu to shortcut, shortcut blank, group when right-clicking
-            document.querySelectorAll(".shortcut, .group:not(.blank)").forEach(elem => (elem.addEventListener("contextmenu", openContextMenu)));
-
-            // add function closeContextMenu to contextmenuOverlay
-            contextmenuOverlay.addEventListener('click', closeContextMenu);
-
-            // add function openDialog to editItem
-            editItem.addEventListener('click', openDialog);
-
-            // add function openDialog to shortcut blank, group blank when left-clicking
-            document.querySelectorAll(".blank").forEach(elem => (elem.addEventListener("click", openDialog)));
-
-            // add function closeDialog to cancelDialog
-            cancelDialog.addEventListener('click', closeDialog);
-
-            // add function closeDialog to dialogOverlay
-            dialogOverlay.addEventListener('click', closeDialog);
-
-            // add function deletegGroupAndShortcut to deleteItem
-            deleteItem.addEventListener('click', deletegGroupAndShortcut);
-
-            // add function syncColorInputs to groupBgInputColor, groupBgInputText, shortcutBgInputColor, shortcutBgInputText
-            groupBgInputColor.addEventListener('change', syncColorInputs(groupBgInputColor));
-            groupBgInputText.addEventListener('change', syncColorInputs(groupBgInputText));
-            shortcutBgInputColor.addEventListener('change', syncColorInputs(shortcutBgInputColor));
-            shortcutBgInputText.addEventListener('change', syncColorInputs(shortcutBgInputText));
+            // add all event listeners
+            addAllEventListeners();
         };
         reader.readAsArrayBuffer(file); // Read the file as an array buffer
 
@@ -150,7 +150,7 @@ function updateCurrentCodes() {
             groupBg = group.children[1].getAttribute('style').slice(-7);
             // loop thru all shortcuts
             shortcutContainer = group.children[2];
-            for (let j = 0; j < shortcutContainer.children.length; j++) {
+            for (j = 0; j < shortcutContainer.children.length; j++) {
                 shortcut = shortcutContainer.children[j];
                 shortcutName = '';
                 link = '';
@@ -302,8 +302,6 @@ function createShortcut() {
 
                     // create a
                     newA = document.createElement('a');
-                    // newA.href = ""; // set link
-                    // newA.title = ""; // set title
                     newBlankShortcut.appendChild(newA); // add a to shortcut
                 }
                 else { // create normal shortcut
@@ -350,6 +348,8 @@ function createShortcut() {
             }
         })
         } );
+
+        addAllEventListeners();
     }
 };
 
@@ -504,9 +504,6 @@ $( function() {
 
 
 // TARGET ELEMENT
-let targetElement = '';
-let targetElementType = ''; // shortcut / shortcut blank / group blank / group
-
 function getTarget(event) {
     clickedElement = event.target;
 
@@ -544,9 +541,6 @@ function getTarget(event) {
     
     // add class to target
     targetElement.classList.add("target");
-    
-    console.log("targetElement: ",targetElement);
-    console.log("targetElementType: ",targetElementType);
 }
 
 // add function getTarget to shortcut, shortcut blank, group blank when left-clicking
@@ -557,10 +551,7 @@ document.querySelectorAll(".shortcut, .group:not(.blank)").forEach(elem => (elem
 
 
 // CONTEXT MENU
-let contextMenu = document.querySelector("#context-menu");
-let contextmenuOverlay = document.querySelector("#contextmenu-overlay");
-let editItem = document.querySelector("#edit-item");
-let deleteItem = document.querySelector("#delete-item");
+
 
 // OPEN CONTEXT MENU
 function openContextMenu(event) {
@@ -589,24 +580,7 @@ contextmenuOverlay.addEventListener('click', closeContextMenu);
 
 
 // DIALOG
-let dialog = document.querySelector("#dialog");
-let dialogOverlay = document.querySelector("#dialog-overlay");
 
-let dialogName = document.querySelector("#dialog-name");
-
-let groupComponent = document.querySelector("#dialog-for-group");
-let groupNameInput = document.querySelector("#group-name-input");
-let groupBgInputColor = document.querySelector("#group-bg-input-color");
-let groupBgInputText = document.querySelector("#group-bg-input-text");
-
-let shortcutComponent = document.querySelector("#dialog-for-shortcut");
-let shortcutNameInput = document.querySelector("#shortcut-name-input");
-let linkInput = document.querySelector("#link-input");
-let shortcutBgInputColor = document.querySelector("#shortcut-bg-input-color");
-let shortcutBgInputText = document.querySelector("#shortcut-bg-input-text");
-
-let cancelDialog = document.querySelector("#dialog-cancel");
-let saveDialog = document.querySelector("#dialog-save");
 
 // OPEN DIALOG
 function showDialogComponent() { // shortcut / shortcut blank / group blank / group
@@ -735,8 +709,6 @@ dialogOverlay.addEventListener('click', closeDialog);
 
 
 // DELETE GROUP AND SHORTCUT
-let elementToBeDeleted = '';
-
 function deletegGroupAndShortcut() {
     // close context menu
     closeContextMenu();
@@ -773,62 +745,145 @@ deleteItem.addEventListener('click', deletegGroupAndShortcut);
 
 
 // SAVE DIALOG
+
 function syncColorInputs(inputChanged) {
-    console.log(inputChanged);
-    console.log(shortcutBgInputText);
-    if (inputChanged == groupBgInputColor) {
-        console.log("groupBgInputColor changed")
+    if (inputChanged == 'groupBgInputColor') {
         groupBgInputText.value = groupBgInputColor.value;
     }
-    else if (inputChanged == groupBgInputText) {
-        console.log("groupBgInputText changed")
+    else if (inputChanged == 'groupBgInputText') {
         groupBgInputColor.value = groupBgInputText.value;
     }
-    else if (inputChanged == shortcutBgInputColor) {
-        console.log("shortcutBgInputColor changed")
+    else if (inputChanged == 'shortcutBgInputColor') {
         shortcutBgInputText.value = shortcutBgInputColor.value;
     }
-    else if (inputChanged == shortcutBgInputText) {
-        console.log("shortcutBgInputText changed")
+    else if (inputChanged == 'shortcutBgInputText') {
         shortcutBgInputColor.value = shortcutBgInputText.value;
     }
 }
 
 // add function syncColorInputs to groupBgInputColor, groupBgInputText, shortcutBgInputColor, shortcutBgInputText
-groupBgInputColor.addEventListener('change', syncColorInputs(groupBgInputColor));
-groupBgInputText.addEventListener('change', syncColorInputs(groupBgInputText));
-shortcutBgInputColor.addEventListener('change', syncColorInputs(shortcutBgInputColor));
-shortcutBgInputText.addEventListener('change', syncColorInputs(shortcutBgInputText));
+groupBgInputColor.addEventListener('input', () => {syncColorInputs('groupBgInputColor');});
+groupBgInputText.addEventListener('input', () => {syncColorInputs('groupBgInputText');});
+shortcutBgInputColor.addEventListener('input', () => {syncColorInputs('shortcutBgInputColor');});
+shortcutBgInputText.addEventListener('input', () => {syncColorInputs('shortcutBgInputText');});
 
 function saveDialogChanges() {
     // update the changes
-    // shortcut
-    // show shortcut component
-    shortcutComponent.hidden = false;
-    shortcutNameInput.value = targetElement.children[1].textContent;
-    linkInput.value = targetElement.children[0].href;
-    shortcutBgInputColor.value = targetElement.getAttribute("style").slice(-7);
-    shortcutBgInputText.value = targetElement.getAttribute("style").slice(-7);
+    if (targetElementType == "shortcut") { // shortcut
+        targetElement.children[1].textContent = shortcutNameInput.value;
+        targetElement.children[0].href = linkInput.value;
+        targetElement.setAttribute("style", `background-color: ${shortcutBgInputColor.value}`);
+    }
 
+    else if (targetElementType == "shortcut blank") { // shortcut blank
+        // remove icon
+        targetElement.children[0].remove();
+        // update link
+        targetElement.children[0].href = linkInput.value;
+        // set title
+        targetElement.children[0].title = shortcutNameInput.value
+        // create shortcut-name
+        newShortcutName = document.createElement('div');
+        newShortcutName.classList.add("shortcut-name"); // add class
+        newShortcutName.textContent = shortcutNameInput.value; // set textContent
+        targetElement.appendChild(newShortcutName); // add shorcut-name to targetElement
+        // set background
+        targetElement.setAttribute("style", `background-color: ${shortcutBgInputColor.value}`);
+        // update blank class
+        targetElement.classList.remove("blank");
+
+    }
+    else if (targetElementType == "group") { // group
+        targetElement.children[1].textContent = groupNameInput.value;
+        targetElement.children[1].setAttribute("style", `background-color: ${groupBgInputColor.value}`);
+    }
+    else if (targetElementType == "group blank") { // group blank
+        // remove icon
+        targetElement.children[0].remove();
+        // create handle
+        newHandle = document.createElement('div');
+        newHandle.classList.add("handle"); // add class
+        newHandle.innerHTML = '<i class="fa-solid fa-arrows-up-down"></i>'; // add icon
+        targetElement.appendChild(newHandle); // add handle to targetElement
+
+        // create group-name
+        newGroupName = document.createElement('div');
+        newGroupName.classList.add("group-name"); // add class
+        newGroupName.setAttribute("style", `background-color: ${groupBgInputColor.value}`); // set style
+        newGroupName.textContent = groupNameInput.value; // set textContent
+        targetElement.appendChild(newGroupName); // add group-name to targetElement
+
+        // create shorcut-container
+        newShortcutContainer = document.createElement('div');
+        newShortcutContainer.classList.add("shortcut-container"); // add class
+        targetElement.appendChild(newShortcutContainer); // add shorcut-container to targetElement
+
+        // create blank shorcut
+        newBlankShortcut = document.createElement('div');
+        newBlankShortcut.classList.add("shortcut"); // add class
+        newBlankShortcut.classList.add("blank"); // add class
+        newBlankShortcut.innerHTML = '<i class="fa-solid fa-plus"></i>'; // add icon
+        newShortcutContainer.appendChild(newBlankShortcut); // add shorcut blank to newShortcutContainer
+
+        // create a
+        newA = document.createElement('a');
+        newBlankShortcut.appendChild(newA); // add a to newBlankShortcut
+
+        // update blank class
+        targetElement.classList.remove("blank");
+
+    }
     // update codes
     checkAndAddBlanks(); // already have updateCurrentCodes and convertRbgToHex
     rearrangeGroupIds();
-
     // close dialog
     closeDialog();
+    addAllEventListeners();
 }
 
-// saveDialog.addEventListener("click", () => {
-//     updateDialogComponent();
-//     updateCurrentCodes();
-//     checkAndAddBlanks();
-//     // hide dialog overlay
-//     document.querySelector("#dialog-overlay").hidden = true;
-//     // hide dialog
-//     document.querySelector("#dialog").hidden = true;
-//     // reset target
-//     resetTarget();
-// });
+
+// add function saveDialogChanges to saveDialog
+saveDialog.addEventListener('click', saveDialogChanges);
+
+
+// ADD EVENT LISTENER
+function addAllEventListeners() {
+    // add function getTarget to shortcut, shortcut blank, group blank when left-clicking
+    document.querySelectorAll(".shortcut, .group.blank").forEach(elem => (elem.addEventListener("click", getTarget)));
+
+    // add function getTarget to shortcut, shortcut blank, group when right-clicking
+    document.querySelectorAll(".shortcut, .group:not(.blank)").forEach(elem => (elem.addEventListener("contextmenu", getTarget)));
+
+    // add function openContextMenu to shortcut, shortcut blank, group when right-clicking
+    document.querySelectorAll(".shortcut, .group:not(.blank)").forEach(elem => (elem.addEventListener("contextmenu", openContextMenu)));
+
+    // add function closeContextMenu to contextmenuOverlay
+    contextmenuOverlay.addEventListener('click', closeContextMenu);
+
+    // add function openDialog to editItem
+    editItem.addEventListener('click', openDialog);
+
+    // add function openDialog to shortcut blank, group blank when left-clicking
+    document.querySelectorAll(".blank").forEach(elem => (elem.addEventListener("click", openDialog)));
+
+    // add function closeDialog to cancelDialog
+    cancelDialog.addEventListener('click', closeDialog);
+
+    // add function closeDialog to dialogOverlay
+    dialogOverlay.addEventListener('click', closeDialog);
+
+    // add function deletegGroupAndShortcut to deleteItem
+    deleteItem.addEventListener('click', deletegGroupAndShortcut);
+
+    // add function syncColorInputs to groupBgInputColor, groupBgInputText, shortcutBgInputColor, shortcutBgInputText
+    groupBgInputColor.addEventListener('input', () => {syncColorInputs('groupBgInputColor');});
+    groupBgInputText.addEventListener('input', () => {syncColorInputs('groupBgInputText');});
+    shortcutBgInputColor.addEventListener('input', () => {syncColorInputs('shortcutBgInputColor');});
+    shortcutBgInputText.addEventListener('input', () => {syncColorInputs('shortcutBgInputText');});
+
+    // add function saveDialogChanges to saveDialog
+    saveDialog.addEventListener('click', saveDialogChanges);
+}
 
 
 // function to add blank at the end     V  
@@ -840,10 +895,9 @@ function saveDialogChanges() {
 // set default html                     V
 // style buttons                        V
 // add delete function                  V
-// edit mode by right click             
+// edit mode by right click             V
 // make blank editable                  V
 // highlight current chosen element     V
-// style groups
-// reset dialog position after closing/saving
 // add fuction to change rbg to hex after dragging  V
-// update color live in dialog
+// update color live in dialog          V
+
