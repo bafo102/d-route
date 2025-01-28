@@ -208,8 +208,7 @@ function updateCurrentCodes() {
     }
 
     currentCodes = JSON.stringify(currentCodesJson);
-    console.log(currentCodes);
-    console.log(currentCodes != "[]");
+    
     if (currentCodes != "[]") {
         // store data
         localStorage.setItem('shortcut_data', currentCodes);
