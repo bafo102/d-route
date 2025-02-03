@@ -245,7 +245,7 @@ a {
 
 #dialog input:not(#shortcut-bg-input-color, #group-bg-input-color) {
     height: 3vh;
-    padding: 0 0.8vw;
+    padding: 0 0.4vw;
 }
 
 #shortcut-bg-input-color, #group-bg-input-color {
