@@ -1,4 +1,7 @@
 // VARIABLE INITIALIZATION
+let uploadButton = document.querySelector("#uploadBtn");
+let uploadInput = document.querySelector("#upload");
+
 let targetElement = '';
 let targetElementType = ''; // shortcut / shortcut blank / group blank / group
 
@@ -36,9 +39,15 @@ rearrangeGroupIds(); // has updateCurrentCodes, which has convertRbgToHex and st
 updateHeader();
 
 // UPLOAD DATA
-document.getElementById('upload').addEventListener('change', function(event) {
+function invokeUploadInput() {
+    uploadInput.click();
+}
+
+function uploadFile(event) {
     // only get the first file
+    console.log(event);
     const file = event.target.files[0];
+    console.log('x');
 
     if (file) {
         const reader = new FileReader();
@@ -77,7 +86,12 @@ document.getElementById('upload').addEventListener('change', function(event) {
     } else {
         console.log('No file selected');
     }
-});
+};
+
+// add function invokeUploadInput to uploadButton
+uploadButton.addEventListener('click', invokeUploadInput);
+// add function uploadFile to uploadInput
+uploadInput.addEventListener('change', uploadFile);
 
 // COPY CODES
 document.getElementById('copyBtn').addEventListener('click', () => {
